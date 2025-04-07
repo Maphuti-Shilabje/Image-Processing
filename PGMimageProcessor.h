@@ -1,9 +1,9 @@
 #ifndef PGM_IMAGE_PROCESSOR_H
 #define PGM_IMAGE_PROCESSOR_H
-
+#include "ConnectedComponent.h"
+#include <memory>
 #include <vector>
 #include <string>
-#include "ConnectedComponent.h"
 #include "PGMimage.h"
 
 class PGMimageProcessor {
