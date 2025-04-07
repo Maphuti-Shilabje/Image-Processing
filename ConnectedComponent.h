@@ -13,10 +13,10 @@
 class ConnectedComponent
 {
    private:
-      int id     // id for the component
-      int pixels  // number of pixels in the component
-      std::vector<std::pair<int x, int y>> pixels;    // coordinates of the pixels in the component
-						  //
+      int id;     // id for the component
+      int numPixels;  // number of pixels in the component
+      std::vector<std::pair<int, int>> pixels;    // coordinates of the pixels in the component
+						 
    public:
       explicit ConnectedComponent(int id);
       ~ConnectedComponent() = default;
