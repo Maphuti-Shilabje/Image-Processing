@@ -120,3 +120,26 @@ int PGMimageProcessor::filterComponentsBySize(int minSize, int maxSize) {
     }
     return components.size(); // Return count of remaining components
 }
+
+// Writes the binary image showing all components to a PGM file
+bool PGMimageProcessor::writeComponents(const std::string& outFileName) const {
+    int width, height;
+    image.getDims(width, height);
+    std::vector<unsigned char> outputImage(width * height, 0); // Black background
+
+    // Set component pixels to white (255)
+    for (const auto& component : components) {
+        for (const auto& [x, y] : component->getPixels()) {
+            outputImage[y * width + x] = 255;
+        }
+    }
+
+    std::ofstream outFile(outFileName, std::ios::binary);
+    if (!outFile) return false;
+
+    // Write PGM header and pixel data
+    outFile << "P5\n" << width << " " << height << "\n255\n";
+    outFile.write(reinterpret_cast<const char*>(outputImage.data()), outputImage.size());
+    outFile.close();
+    return true;
+}
