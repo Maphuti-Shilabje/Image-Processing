@@ -107,3 +107,16 @@ void PGMimageProcessor::bfs(int startX, int startY, std::vector<unsigned char>& 
     }
 }
 
+// Filtering out components smaller or larger than the specified size range
+int PGMimageProcessor::filterComponentsBySize(int minSize, int maxSize) {
+    auto it = components.begin();
+    while (it != components.end()) {
+        int size = (*it)->getNumPixels();
+        if (size < minSize || size > maxSize) {
+            it = components.erase(it); // Remove if outside range
+        } else {
+            ++it;
+        }
+    }
+    return components.size(); // Return count of remaining components
+}
