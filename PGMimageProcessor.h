@@ -8,6 +8,8 @@
 
 class PGMimageProcessor {
 private:
+	int imageWidth;
+    int imageHeight;
     PGMimage image;
     std::vector<std::unique_ptr<ConnectedComponent>> components;
     void bfs(int x, int y, std::vector<unsigned char>& binaryImage, std::unique_ptr<ConnectedComponent>& component, int width, int height);

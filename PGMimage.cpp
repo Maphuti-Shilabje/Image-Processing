@@ -47,6 +47,7 @@ void PGMimage::read(const string& fileName)
     {
         //cout << line << endl;
         if (line[0] != '#') break;
+		std::cout << line << " ";
     }
     istringstream iss(line);
     iss >> width >> height;

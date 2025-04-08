@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include "PGMimageProcessor.h"
+#include <algorithm>
 
 int main(int argc, char* argv[]) {
     // Input/output file names and parameters with default values

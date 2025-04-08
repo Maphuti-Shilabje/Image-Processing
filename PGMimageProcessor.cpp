@@ -11,6 +11,7 @@ PGMimageProcessor::PGMimageProcessor(const std::string& filename) {
     if (image.getBuffer() == nullptr) {
         throw std::runtime_error("Failed to read image");
     }
+	image.getDims(imageWidth, imageHeight);
 }
 
 // copy constructor
@@ -48,12 +49,11 @@ PGMimageProcessor& PGMimageProcessor::operator=(PGMimageProcessor&& other) noexc
 // Extracts connected components from the image based on a threshold and minimum valid size
 int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSize) {
     const unsigned char* imageData = image.getBuffer();
-    int width, height;
-    image.getDims(width, height);
+
 
     // Create a binary image based on the threshold
-    std::vector<unsigned char> binaryImage(width * height);
-    for (int i = 0; i < width * height; ++i) {
+    std::vector<unsigned char> binaryImage(imageWidth * imageHeight);
+    for (int i = 0; i < imageWidth * imageHeight; ++i) {
         binaryImage[i] = (imageData[i] >= threshold) ? 255 : 0;
     }
 
@@ -61,12 +61,12 @@ int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSi
 
     int componentId = 0;
     // Traverse each pixel to find connected components using BFS
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            int index = y * width + x;
+    for (int y = 0; y < imageHeight; ++y) {
+        for (int x = 0; x < imageWidth; ++x) {
+            int index = y * imageWidth + x;
             if (binaryImage[index] == 255) {
                 auto component = std::make_unique<ConnectedComponent>(componentId);
-                bfs(x, y, binaryImage, component, width, height);
+                bfs(x, y, binaryImage, component, imageWidth, imageHeight);
                 if (component->getNumPixels() >= minValidSize) {
                     components.push_back(std::move(component));
                     componentId++;
@@ -125,22 +125,24 @@ int PGMimageProcessor::filterComponentsBySize(int minSize, int maxSize) {
 
 // Writes the binary image showing all components to a PGM file
 bool PGMimageProcessor::writeComponents(const std::string& outFileName) const {
-    int width, height;
-    image.getDims(width, height);
-    std::vector<unsigned char> outputImage(width * height, 0); // Black background
+    std::vector<unsigned char> outputImage(imageWidth * imageHeight, 0); // Black background
 
     // Set component pixels to white (255)
-    for (const auto& component : components) {
+     for (const auto& component : components) {
         for (const auto& [x, y] : component->getPixels()) {
-            outputImage[y * width + x] = 255;
+            // Validate (x, y) before writing
+            if (x >= 0 && x < imageWidth && y >= 0 && y < imageHeight) {
+                outputImage[y * imageWidth + x] = 255;
+            } else {
+                std::cerr << "Warning: Skipping invalid pixel (" << x << ", " << y << ")\n";
+            }
         }
     }
-
     std::ofstream outFile(outFileName, std::ios::binary);
     if (!outFile) return false;
 
     // Write PGM header and pixel data
-    outFile << "P5\n" << width << " " << height << "\n255\n";
+    outFile << "P5\n" << imageWidth << " " << imageHeight << "\n255\n";
     outFile.write(reinterpret_cast<const char*>(outputImage.data()), outputImage.size());
     outFile.close();
     return true;
