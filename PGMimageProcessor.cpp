@@ -41,3 +41,34 @@ PGMimageProcessor& PGMimageProcessor::operator=(PGMimageProcessor&& other) noexc
     return *this;
 }
 
+// Extracts connected components from the image based on a threshold and minimum valid size
+int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSize) {
+    const unsigned char* imageData = image.getBuffer();
+    int width, height;
+    image.getDims(width, height);
+
+    // Create a binary image based on the threshold
+    std::vector<unsigned char> binaryImage(width * height);
+    for (int i = 0; i < width * height; ++i) {
+        binaryImage[i] = (imageData[i] >= threshold) ? 255 : 0;
+    }
+
+    image.clear(); // Free memory from original image
+
+    int componentId = 0;
+    // Traverse each pixel to find connected components using BFS
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            int index = y * width + x;
+            if (binaryImage[index] == 255) {
+                auto component = std::make_unique<ConnectedComponent>(componentId);
+                bfs(x, y, binaryImage, component, width, height);
+                if (component->getNumPixels() >= minValidSize) {
+                    components.push_back(std::move(component));
+                    componentId++;
+                }
+            }
+        }
+    }
+    return components.size(); // Return total valid components found
+}
