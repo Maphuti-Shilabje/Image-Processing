@@ -1,5 +1,7 @@
 #include "PGMimageProcessor.h"
 #include <fstream>
+#include <queue>
+
 
 // reade the image from file
 PGMimageProcessor::PGMimageProcessor(const std::string& filename) {
@@ -72,3 +74,36 @@ int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSi
     }
     return components.size(); // Return total valid components found
 }
+
+// Breadth-First Search to group pixels into a connected component
+void PGMimageProcessor::bfs(int startX, int startY, std::vector<unsigned char>& binaryImage,
+                            std::unique_ptr<ConnectedComponent>& component, int width, int height) {
+    std::queue<std::pair<int, int>> q;
+    q.emplace(startX, startY);
+    binaryImage[startY * width + startX] = 0; // Mark as visited
+    component->addPixel(startX, startY);
+
+    // 4-connected neighborhood
+    const int dx[] = {0, 0, 1, -1};
+    const int dy[] = {-1, 1, 0, 0};
+
+    // Explore all connected pixels
+    while (!q.empty()) {
+        auto [x, y] = q.front();
+        q.pop();
+
+        for (int i = 0; i < 4; ++i) {
+            int nx = x + dx[i];
+            int ny = y + dy[i];
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                int index = ny * width + nx;
+                if (binaryImage[index] == 255) {
+                    binaryImage[index] = 0; // Mark as visited
+                    component->addPixel(nx, ny);
+                    q.emplace(nx, ny);
+                }
+            }
+        }
+    }
+}
+
