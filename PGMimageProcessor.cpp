@@ -1,6 +1,8 @@
 #include "PGMimageProcessor.h"
 #include <fstream>
+#include <stdexcept>
 #include <queue>
+#include <algorithm>
 
 
 // reade the image from file
@@ -160,4 +162,15 @@ int PGMimageProcessor::getSmallestSize() const {
     if (components.empty()) return 0;
     return std::min_element(components.begin(), components.end(),
         [](const auto& a, const auto& b) { return a->getNumPixels() < b->getNumPixels(); })->get()->getNumPixels();
+}
+
+// Prints the ID and pixel count of a given component
+void PGMimageProcessor::printComponentData(const ConnectedComponent& theComponent) const {
+    std::cout << "Component ID: " << theComponent.getId()
+              << ", Number of pixels: " << theComponent.getNumPixels() << std::endl;
+}
+
+// Returns a const reference to all extracted connected components
+const std::vector<std::unique_ptr<ConnectedComponent>>& PGMimageProcessor::getComponents() const {
+    return components;
 }
