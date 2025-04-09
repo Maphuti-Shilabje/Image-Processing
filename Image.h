@@ -193,3 +193,28 @@ public:
     }
 	
 	
+	  // Create a grayscale version for PPM -> PGM conversion
+    Image<unsigned char> toGrayscale() const {
+        static_assert(!std::is_same<PixelType, unsigned char>::value, 
+                      "toGrayscale() can only be called on color images");
+                      
+        Image<unsigned char> result;
+        unsigned char* grayBuffer = new unsigned char[width * height];
+        
+        for (int i = 0; i < width * height; i++) {
+            // Convert RGB to grayscale using standard formula
+            grayBuffer[i] = static_cast<unsigned char>(
+                0.299 * buffer[i].r + 0.587 * buffer[i].g + 0.114 * buffer[i].b
+            );
+        }
+        
+        result.setImageData(grayBuffer, width, height);
+        delete[] grayBuffer;
+        
+        return result;
+    }
+};
+ 
+	
+	
+#endif
