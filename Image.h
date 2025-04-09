@@ -215,6 +215,92 @@ public:
     }
 };
  
-	
+// RGB Pixel structure for PPM images
+struct RGBPixel {
+    unsigned char r, g, b;
+    
+    RGBPixel() : r(0), g(0), b(0) {}
+    RGBPixel(unsigned char red, unsigned char green, unsigned char blue) 
+        : r(red), g(green), b(blue) {}
+};
+
+// Template specialization for PPM (RGBPixel)
+template<>
+void Image<RGBPixel>::read(const std::string& fileName) {
+    std::ifstream ifs(fileName, std::ios::binary);
+    if (!ifs) {
+        std::cerr << "Failed to open file for read: " << fileName << std::endl;
+        return;
+    }
+    
+    std::string line;
+    ifs >> line >> std::ws;
+    
+    if (line != "P6") {
+        std::cerr << "Malformed PPM file - magic is: " << line << std::endl;
+        return;
+    }
+    
+    isPPM = true;
+    
+    while (getline(ifs, line)) {
+        if (line[0] != '#') break;
+    }
+    
+    std::istringstream iss(line);
+    iss >> width >> height;
+    
+    if (!iss) {
+        std::cerr << "Header not correct - unexpected image sizes found: " << line << std::endl;
+        return;
+    }
+    
+    int maxChan = 0;
+    ifs >> maxChan >> std::ws;
+    
+    if (maxChan != 255) {
+        std::cerr << "Max color value incorrect - found: " << maxChan << std::endl;
+    }
+    
+    buffer = new RGBPixel[width * height];
+    ifs.read(reinterpret_cast<char*>(buffer), width * height * 3);  // 3 bytes per pixel
+    
+    if (!ifs) {
+        std::cerr << "Failed to read binary block\n";
+    }
+    
+    ifs.close();
+}
+
+template<>
+void Image<RGBPixel>::write(const std::string& fileName) {
+    if (buffer == nullptr || width < 1 || height < 1) {
+        std::cerr << "Invalid data for PPM write to " << fileName << std::endl;
+        return;
+    }
+    
+    std::ofstream ofs(fileName, std::ios::binary);
+    if (!ofs) {
+        std::cerr << "Unable to open PPM output file " << fileName << std::endl;
+        return;
+    }
+    
+    ofs << "P6\n#File produced by Image Processor\n" << width << " " << height << std::endl << 255 << std::endl;
+    ofs.write(reinterpret_cast<char*>(buffer), width * height * 3);  // 3 bytes per pixel
+    
+    if (!ofs) {
+        std::cerr << "Error writing binary block of PPM.\n";
+    }
+    
+    ofs.close();
+}
+
+// Create explicit instantiations
+template class Image<unsigned char>;
+template class Image<RGBPixel>;
+
+// Type aliases for convenience
+using PGMImage = Image<unsigned char>;
+using PPMImage = Image<RGBPixel>;	
 	
 #endif
