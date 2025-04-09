@@ -117,3 +117,79 @@ public:
             buffer[i] = data[i];
         }
     }
+	
+	 // Read and write image files
+    template <typename T = PixelType>
+    typename std::enable_if<std::is_same<T, unsigned char>::value, void>::type
+    read(const std::string& fileName) {
+        std::ifstream ifs(fileName, std::ios::binary);
+        if (!ifs) {
+            std::cerr << "Failed to open file for read: " << fileName << std::endl;
+            return;
+        }
+        
+        std::string line;
+        ifs >> line >> std::ws;
+        
+        if (line != "P5") {
+            std::cerr << "Malformed PGM file - magic is: " << line << std::endl;
+            return;
+        }
+        
+        isPPM = false;
+        
+        while (getline(ifs, line)) {
+            if (line[0] != '#') break;
+        }
+        
+        std::istringstream iss(line);
+        iss >> width >> height;
+        
+        if (!iss) {
+            std::cerr << "Header not correct - unexpected image sizes found: " << line << std::endl;
+            return;
+        }
+        
+        int maxChan = 0;
+        ifs >> maxChan >> std::ws;
+        
+        if (maxChan != 255) {
+            std::cerr << "Max grey level incorrect - found: " << maxChan << std::endl;
+        }
+        
+        buffer = new unsigned char[width * height];
+        ifs.read(reinterpret_cast<char*>(buffer), width * height);
+        
+        if (!ifs) {
+            std::cerr << "Failed to read binary block\n";
+        }
+        
+        ifs.close();
+    }
+    
+    // Write method for PGM
+    template <typename T = PixelType>
+    typename std::enable_if<std::is_same<T, unsigned char>::value, void>::type
+    write(const std::string& fileName) {
+        if (buffer == nullptr || width < 1 || height < 1) {
+            std::cerr << "Invalid data for PGM write to " << fileName << std::endl;
+            return;
+        }
+        
+        std::ofstream ofs(fileName, std::ios::binary);
+        if (!ofs) {
+            std::cerr << "Unable to open PGM output file " << fileName << std::endl;
+            return;
+        }
+        
+        ofs << "P5\n#File produced by Image Processor\n" << width << " " << height << std::endl << 255 << std::endl;
+        ofs.write(reinterpret_cast<char*>(buffer), width * height);
+        
+        if (!ofs) {
+            std::cerr << "Error writing binary block of PGM.\n";
+        }
+        
+        ofs.close();
+    }
+	
+	
