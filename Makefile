@@ -1,7 +1,7 @@
 # Makefile for the ConnectedComponents assignment
 
 CXX = g++
-CXXFLAGS = -Wall -std=c++17 -g
+CXXFLAGS = -Wall -std=c++20 -g
 TARGET = findcomp
 TEST_TARGET = runTests
 
