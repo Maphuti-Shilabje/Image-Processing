@@ -3,7 +3,6 @@
 A command-line tool written in modern C++ to perform connected-component analysis on PGM images. The program identifies distinct objects within an image based on pixel connectivity, filters them by size, and outputs a new, processed image. This project demonstrates strong algorithm design and C++ memory management principles.
 
 ![png of the tool running](image.png)
-*(Your task: Create a GIF of you compiling with `make` and running the `findcomp` command on a sample image, showing the output file being created. It's a game-changer!)*
 
 ---
 
